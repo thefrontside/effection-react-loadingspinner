@@ -7,7 +7,17 @@ import { Scenario, scenarios } from "./scenarios";
 function ScenarioRunner({ run }: { run: Scenario['run'] }) {
   const loader = useLoader(run);
 
-  return <LoadingSpinner loader={loader} />;
+  return (
+    <>
+      <div className="border-2 rounded border-solid border-blue-800 p-2 col-span-4">
+        <LoadingSpinner loader={loader} />
+      </div>
+      <div className="border-2 border-solid border-slate-300 p-2 col-span-1">
+        {loader.type}
+      </div>
+    </>
+
+  )
 }
 
 function ScenarioPlayer({ scenario }: { scenario: Scenario }) {
@@ -20,7 +30,7 @@ function ScenarioPlayer({ scenario }: { scenario: Scenario }) {
           <h3 className="text-lg">{scenario.title}</h3>
           <p className="text-slate-600">{scenario.description}</p>
         </div>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-6 gap-4">
           {playing ? (
             <>
               <button
@@ -29,9 +39,7 @@ function ScenarioPlayer({ scenario }: { scenario: Scenario }) {
               >
                 Stop
               </button>
-              <div className="border-2 rounded border-solid border-blue-800 p-2 col-span-3 ">
-                <ScenarioRunner run={scenario.run} />
-              </div>
+              <ScenarioRunner run={scenario.run} />
             </>
           ) : (
             <button
