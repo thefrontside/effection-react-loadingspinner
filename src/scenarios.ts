@@ -20,7 +20,7 @@ export const scenarios: Scenario[] = [
   {
     title: "Succeeds after 9 seconds",
     description:
-      "Shows loading spinner after 1 second, then show spinner for 4s, then shows longer than expected message for 2 seconds, then back to loading spinner, then the result",
+      "Shows loading spinner after 1 second, then show spinner for 4s, then shows longer than expected message for 4 seconds, then back to loading spinner, then the result",
     run: function* (): Operation<string> {
       yield* sleep(9000);
 
@@ -58,6 +58,15 @@ export const scenarios: Scenario[] = [
           yield* sleep(2000);
       }
       return 'Great Success!!!'
+    }
+  },
+  {
+    title: "Fails 3 times in 500ms each",
+    description: "",
+    run: function*(): Operation<string> {
+      yield* sleep(500);
+      
+      throw new Error(`Could not connnect to the server`);
     }
   }
 ];

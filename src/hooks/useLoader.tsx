@@ -11,6 +11,7 @@ export type LoaderState<T> =
     }
   | {
       type: "loading";
+      count: number;
     }
   | {
       type: "loading-slowly";
@@ -49,15 +50,18 @@ export function useLoader<T>(
         const loader = yield* spawn(function* loadingSpinner(): Operation<void> {
           yield* sleep(1000);
 
+          let count = 0;
           while (true) {
             setState({
               type: "loading",
+              count,
             });
-            yield* sleep(4000);
+            yield* sleep(3000);
             setState({
               type: "loading-slowly",
             });
-            yield* sleep(2000);
+            yield* sleep(4000);
+            count++;
           }
         });
 
@@ -70,6 +74,8 @@ export function useLoader<T>(
           });
           break;
         } catch (e) {
+          yield* loader.halt();
+
           const error = e instanceof Error ? e : new Error(`${e}`);
           if (attempt + 1 === retryAttempts) {
             setState({
@@ -86,6 +92,7 @@ export function useLoader<T>(
               type: 'retrying',
               error,
             })
+            yield* sleep(1000);
           }
         }
 
