@@ -1,19 +1,13 @@
+import { useState } from "react";
 import "./App.css";
-
+import { LoadingSpinner } from "./components/LoadingSpinner";
 import { useLoader } from "./hooks/useLoader";
 import { Scenario, scenarios } from "./scenarios";
-import { LoadingSpinner } from "./components/LoadingSpinner";
-import { Operation } from "effection";
-import { useState } from "react";
 
-function ScenarioRunner({ run }: { run: () => Operation<unknown> }) {
+function ScenarioRunner({ run }: { run: Scenario['run'] }) {
   const loader = useLoader(run);
 
-  return (
-    <div className="border-1 h-5">
-      <LoadingSpinner loader={loader} />
-    </div> 
-  )
+  return <LoadingSpinner loader={loader} />;
 }
 
 function ScenarioPlayer({ scenario }: { scenario: Scenario }) {
@@ -21,29 +15,52 @@ function ScenarioPlayer({ scenario }: { scenario: Scenario }) {
 
   return (
     <>
-      <h3>{scenario.title}</h3>
-      <p>{scenario.description}</p>
-      {playing ? (
-        <ScenarioRunner run={scenario.run} />
-      ) : (
-        <button onClick={() => setPlaying(true)}>Play</button>
-      )}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <h3 className="text-lg">{scenario.title}</h3>
+          <p className="text-slate-600">{scenario.description}</p>
+        </div>
+        <div className="grid grid-cols-4 gap-4">
+          {playing ? (
+            <>
+              <button
+                className="rounded bg-red-800 text-white"
+                onClick={() => setPlaying(false)}
+              >
+                Stop
+              </button>
+              <div className="border-2 rounded border-solid border-blue-800 p-2 col-span-3 ">
+                <ScenarioRunner run={scenario.run} />
+              </div>
+            </>
+          ) : (
+            <button
+              className="rounded bg-blue-800 text-white"
+              onClick={() => setPlaying(true)}
+            >
+              Play
+            </button>
+          )}
+        </div>
+      </div>
     </>
   );
 }
 
 const App = () => {
   return (
-    <div>
-      <h1>Retrying Loader Example in React with Effection</h1>
-      <ul className="list-none">
+    <>
+      <h1 className="text-2xl m-5">
+        Sophisticated Loading Spinner with Effection in React
+      </h1>
+      <ul className="grid grid-col divide-y">
         {scenarios.map((s, i) => (
-          <li key={i}>
+          <li key={i} className="p-5">
             <ScenarioPlayer scenario={s} />
           </li>
         ))}
       </ul>
-    </div>
+    </>
   );
 };
 

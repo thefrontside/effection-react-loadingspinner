@@ -7,7 +7,7 @@ export function LoadingSpinner({ loader }: { loader: LoaderState<unknown> }): JS
       return (
         <>
           <SpinnerCircular size={30} thickness={300} />
-          Loading
+          Loading...
         </>
       );
     case "loading-slowly":
@@ -19,9 +19,21 @@ export function LoadingSpinner({ loader }: { loader: LoaderState<unknown> }): JS
       );
     case "failed-attempt":
       return (
-        <>
-        </>
+        <p className="text-red-800">
+          Encountered and error {loader.error.message}.
+        </p>
+      )
+    case "retrying":
+      return (
+        <p className="text-red-800">
+          Encountered and error {loader.error.message}. Retrying...
+        </p>
+      )
+    case "success":
+      return (
+        <>{loader.value}</>
       )
   }
+
   return <></>
 }

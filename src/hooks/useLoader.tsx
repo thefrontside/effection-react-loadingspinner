@@ -8,7 +8,6 @@ export type LoaderState<T> =
     }
   | {
       type: "started";
-      attempt: number;
     }
   | {
       type: "loading";
@@ -26,7 +25,7 @@ export type LoaderState<T> =
     }
   | {
       type: "retrying";
-      attempt: number;
+      error: Error;
     }
   | {
       type: "failed";
@@ -34,36 +33,36 @@ export type LoaderState<T> =
     };
 
 export function useLoader<T>(
-  op: () => Operation<T>,
-  retryAttempts: number = 2,
+  op: (attempt: number) => Operation<T>,
+  retryAttempts: number = 3,
   deps: DependencyList = []
 ): LoaderState<T> {
   const [state, setState] = useState<LoaderState<T>>({ type: "initial" });
 
   useEffect(() => {
     const task = run(function* main() {
+      setState({
+        type: "started",
+      });
+
       for (let attempt = 0; attempt < retryAttempts; attempt++) {
-        setState({
-          type: attempt === 0 ? "started" : "retrying",
-          attempt,
+        const loader = yield* spawn(function* loadingSpinner(): Operation<void> {
+          yield* sleep(1000);
+
+          while (true) {
+            setState({
+              type: "loading",
+            });
+            yield* sleep(4000);
+            setState({
+              type: "loading-slowly",
+            });
+            yield* sleep(2000);
+          }
         });
+
         try {
-          yield* spawn(function* loadingSpinner(): Operation<void> {
-            yield* sleep(1000);
-
-            while (true) {
-              setState({
-                type: "loading",
-              });
-              yield* sleep(4000);
-              setState({
-                type: "loading-slowly",
-              });
-              yield* sleep(2000);
-            }
-          });
-
-          const result = yield* op();
+          const result = yield* op(attempt);
 
           setState({
             type: "success",
@@ -71,11 +70,26 @@ export function useLoader<T>(
           });
           break;
         } catch (e) {
-          setState({
-            type: retryAttempts - 1 === attempt ? "failed" : "failed-attempt",
-            error: e instanceof Error ? e : new Error(`${e}`),
-          });
+          const error = e instanceof Error ? e : new Error(`${e}`);
+          if (attempt + 1 === retryAttempts) {
+            setState({
+              type: "failed",
+              error,
+            });
+          } else {
+            setState({
+              type: "failed-attempt",
+              error,
+            });
+            yield* sleep(1000);
+            setState({
+              type: 'retrying',
+              error,
+            })
+          }
         }
+
+        yield* loader.halt();
       }
     });
 
