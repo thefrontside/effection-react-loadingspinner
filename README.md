@@ -1,30 +1,15 @@
-# React + TypeScript + Vite
+## Loading Spinner with Effection in React
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Example of a detailed loading spinner implemented as a hook. It gives users feedback when the request takes too long to load. It automatically retries up to 3 times if the request fails.
 
-Currently, two official plugins are available:
+- [`App.tsx`][app-tsx] - shows all of the scenarios executed by the spinner
+- [`useLoader hook`][useloader-hook] - executes the operation
+- [`createLoader`][create-loader] - the main operation that executes the entire loader
+- [`createSpinner`][create-spinner] - operation responsible for presenting the loading spinner
+- [`LoadingSpinner component`][loading-spinner-component] - the component that's responsible for showing all of the spinners
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+[app-tsx]: /src/App.tsx
+[useloader-hook]: src/hooks/useLoader.ts
+[create-loader]: src/operations/createLoader.ts
+[create-spinner]: src/operations/createSpinner.ts
+[loading-spinner-component]: src/components/LoadingSpinner.tsx
