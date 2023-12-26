@@ -922,10 +922,10 @@ doctrine@^3.0.0:
   dependencies:
     esutils "^2.0.2"
 
-effection@^3.0.0-beta.4:
-  version "3.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/effection/-/effection-3.0.0-beta.4.tgz#c8c0a1e8ebce97dd8fd5ae83268e601f39ff9f30"
-  integrity sha512-ftbrRqmVpV/h2KbU92INQ9CuasfXHK5xBLvH19p+kAmEeKjfYMX43rFVuzvr5SgBUOJCinbJE0sbCHlMQ8rLyg==
+effection@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/effection/-/effection-3.0.0.tgz#1b0ecb06f9ff9ae124c94bc6daeb640aa5a57df3"
+  integrity sha512-gDdd2BNwoWAEbGDaaX3x1vv4LQlw1H59mxS5jRY3QvE71EXrwNg/P6M70B0hJLnk48qfmpn6MIhKlf4djD44qA==
 
 electron-to-chromium@^1.4.601:
   version "1.4.610"
