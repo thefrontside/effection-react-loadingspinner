@@ -1,24 +1,22 @@
 import { Operation, sleep } from "effection";
-import { LoaderState } from "../hooks/useLoader";
+import { UpdateFnContext } from "./UpdateFnContext";
 
-export interface SpinnerOptions<T> {
-  setState: (state: LoaderState<T>) => void;
-}
-
-export function createSpinner<T>({ setState }: SpinnerOptions<T>) {
+export function createSpinner() {
   return function* loadingSpinner(): Operation<void> {
+    const update = yield* UpdateFnContext;
+
     yield* sleep(1000);
 
     let count = 0;
     while (true) {
-      setState({
+      update({
         type: "loading",
         count,
       });
 
       yield* sleep(3000);
 
-      setState({
+      update({
         type: "loading-slowly",
       });
 
