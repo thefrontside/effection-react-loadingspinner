@@ -1,11 +1,11 @@
 import "./App.css";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { useLoader } from "./hooks/useLoader";
-import { Operation, sleep } from "effection";
+import { sleep, Callable, Operation } from "effection";
 import { Player } from "./components/Player";
 
-export function Runner({ op }: { op: (attempt: number) => Operation<string> }) {
-  const loader = useLoader(op);
+export function Runner({ fetcher }: { fetcher: (attempt: number, signal: AbortSignal) => Callable<string> }) {
+  const loader = useLoader(fetcher);
 
   return <LoadingSpinner loader={loader} />;
 }

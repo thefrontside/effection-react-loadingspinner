@@ -36,7 +36,7 @@ export type LoaderState<T> =
 
     
 export function useLoader<T>(
-  fetcher: () => Callable<T>,
+  fetcher: (attempt: number, signal: AbortSignal) => Callable<T>,
   retryAttempts: number = 3,
 ): LoaderState<T> {
   const [state, setState] = useState<LoaderState<T>>({ type: "initial" });
