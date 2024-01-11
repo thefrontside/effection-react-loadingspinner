@@ -15,7 +15,7 @@ function Runner({ load }: { load: LoaderFn<string> } ) {
   return (
     <>
       <button
-        className="rounded bg-red-800 text-white p-4 mb-2 sm:mb-0"
+        className="rounded bg-red-800 text-white p-4 mb-2 ml-2 sm:mb-0"
         onClick={() => restart()}
       >
         Restart

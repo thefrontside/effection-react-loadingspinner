@@ -1,17 +1,24 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { Operation, sleep, spawn, call, useAbortSignal } from "effection";
-import { createSpinner } from "./createSpinner";
+import { CreateSpinnerOptions, createSpinner } from "./createSpinner";
 import { UpdateFnContext } from "./UpdateFnContext";
 import { LoaderFn } from "../hooks/useLoader";
 
-interface CreateLoaderOptions<T> {
+type CreateLoaderOptions<T> = {
   load: LoaderFn<T>;
   retryAttempts: number;
-}
+  failedAttemptErrorInterval: number;
+  retryingMessageInterval: number;
+} & CreateSpinnerOptions;
 
 export function createLoader<T>({
   load,
   retryAttempts,
+  showSpinnerAfterInterval = 1000,
+  loadingInterval = 3000,
+  loadingSlowlyInterval = 4000,
+  failedAttemptErrorInterval = 1000,
+  retryingMessageInterval = 1000,
 }: CreateLoaderOptions<T>): () => Operation<void> {
   return function* loader() {
     const update = yield* UpdateFnContext;
@@ -21,7 +28,13 @@ export function createLoader<T>({
     });
 
     for (let attempt = 0; attempt < retryAttempts; attempt++) {
-      const spinner = yield* spawn(createSpinner());
+      const spinner = yield* spawn(
+        createSpinner({
+          showSpinnerAfterInterval,
+          loadingInterval,
+          loadingSlowlyInterval,
+        })
+      );
 
       const signal = yield* useAbortSignal();
 
@@ -49,12 +62,12 @@ export function createLoader<T>({
             type: "failed-attempt",
             error,
           });
-          yield* sleep(1000);
+          yield* sleep(failedAttemptErrorInterval);
           update({
             type: "retrying",
             error,
           });
-          yield* sleep(1000);
+          yield* sleep(retryingMessageInterval);
         }
       } finally {
         yield* spinner.halt();

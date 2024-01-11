@@ -1,11 +1,21 @@
 import { Operation, sleep } from "effection";
 import { UpdateFnContext } from "./UpdateFnContext";
 
-export function createSpinner() {
+export type CreateSpinnerOptions = {
+  showSpinnerAfterInterval: number;
+  loadingInterval: number;
+  loadingSlowlyInterval: number;
+};
+
+export function createSpinner({
+  showSpinnerAfterInterval,
+  loadingInterval,
+  loadingSlowlyInterval,
+}: CreateSpinnerOptions) {
   return function* loadingSpinner(): Operation<void> {
     const update = yield* UpdateFnContext;
 
-    yield* sleep(1000);
+    yield* sleep(showSpinnerAfterInterval);
 
     let count = 0;
     while (true) {
@@ -14,13 +24,13 @@ export function createSpinner() {
         count,
       });
 
-      yield* sleep(3000);
+      yield* sleep(loadingInterval);
 
       update({
         type: "loading-slowly",
       });
 
-      yield* sleep(4000);
+      yield* sleep(loadingSlowlyInterval);
       count++;
     }
   };
