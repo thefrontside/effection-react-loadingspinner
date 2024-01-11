@@ -4,7 +4,7 @@ import { CreateSpinnerOptions, createSpinner } from "./createSpinner";
 import { UpdateFnContext } from "./UpdateFnContext";
 import { LoaderFn } from "../hooks/useLoader";
 
-type CreateLoaderOptions<T> = {
+export type CreateLoaderOptions<T> = {
   load: LoaderFn<T>;
   retryAttempts: number;
   failedAttemptErrorInterval: number;
@@ -14,11 +14,11 @@ type CreateLoaderOptions<T> = {
 export function createLoader<T>({
   load,
   retryAttempts,
-  showSpinnerAfterInterval = 1000,
-  loadingInterval = 3000,
-  loadingSlowlyInterval = 4000,
-  failedAttemptErrorInterval = 1000,
-  retryingMessageInterval = 1000,
+  showSpinnerAfterInterval,
+  loadingInterval,
+  loadingSlowlyInterval,
+  failedAttemptErrorInterval,
+  retryingMessageInterval,
 }: CreateLoaderOptions<T>): () => Operation<void> {
   return function* loader() {
     const update = yield* UpdateFnContext;

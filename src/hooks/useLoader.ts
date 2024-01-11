@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
 import { run, type Callable } from "effection";
-import { createLoader } from "../operations/createLoader";
+import { CreateLoaderOptions, createLoader } from "../operations/createLoader";
 import { UpdateFn, UpdateFnContext } from "../operations/UpdateFnContext";
 
 export type LoaderState<T> =
@@ -34,12 +34,26 @@ export type LoaderState<T> =
       error: Error;
     };
 
-export type LoaderFn<T> = (params: { attempt: number, signal: AbortSignal }) => Callable<T>;
+export type LoaderFn<T> = (params: {
+  attempt: number;
+  signal: AbortSignal;
+}) => Callable<T>;
+
+export type UseLoaderOptions<T> = Partial<Omit<CreateLoaderOptions<T>, "load">>;
 
 export function useLoader<T>(
   load: LoaderFn<T>,
-  retryAttempts: number = 3,
+  options: UseLoaderOptions<T> = {}
 ) {
+  const {
+    retryAttempts = 3,
+    showSpinnerAfterInterval = 1000,
+    loadingInterval = 3000,
+    loadingSlowlyInterval = 4000,
+    failedAttemptErrorInterval = 1000,
+    retryingMessageInterval = 1000,
+  } = options;
+
   const [state, setState] = useState<LoaderState<T>>({ type: "initial" });
   const [key, setKey] = useState<number>(0);
 
@@ -47,10 +61,27 @@ export function useLoader<T>(
     setKey(key + 1);
   }, [key, setKey]);
 
-  const loader = useMemo(() => createLoader({
-    retryAttempts,
-    load,
-  }), [load, retryAttempts]);
+  const loader = useMemo(
+    () =>
+      createLoader({
+        retryAttempts,
+        load,
+        showSpinnerAfterInterval,
+        loadingInterval,
+        loadingSlowlyInterval,
+        failedAttemptErrorInterval,
+        retryingMessageInterval,
+      }),
+    [
+      failedAttemptErrorInterval,
+      load,
+      loadingInterval,
+      loadingSlowlyInterval,
+      retryAttempts,
+      retryingMessageInterval,
+      showSpinnerAfterInterval,
+    ]
+  );
 
   useEffect(() => {
     const task = run(function* () {
@@ -60,7 +91,7 @@ export function useLoader<T>(
 
     return () => {
       run(() => task.halt());
-      setState({ type: "initial" })
+      setState({ type: "initial" });
     };
   }, [loader, key]);
 

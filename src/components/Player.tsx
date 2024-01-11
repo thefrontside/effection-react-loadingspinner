@@ -1,21 +1,21 @@
 import { useState } from "react";
-import { LoaderFn, useLoader } from "../hooks/useLoader";
+import { LoaderFn, UseLoaderOptions, useLoader } from "../hooks/useLoader";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 
-export interface PlayerProps {
+export type PlayerProps = {
   title: string;
   description: string;
   load: LoaderFn<string>;
-}
+} & Required<UseLoaderOptions<string>>;
 
-function Runner({ load }: { load: LoaderFn<string> } ) {
-  const [loader, { restart }] = useLoader(load);
+function Runner({ load, ...options }: { load: LoaderFn<string> } & Required<UseLoaderOptions<string>> ) {
+  const [loader, { restart }] = useLoader(load, options);
 
   return (
     <>
       <button
-        className="rounded bg-red-800 text-white p-4 mb-2 ml-2 sm:mb-0"
+        className="rounded bg-red-800 text-white p-4 mb-2 sm:ml-2 sm:mb-0"
         onClick={() => restart()}
       >
         Restart
@@ -27,7 +27,7 @@ function Runner({ load }: { load: LoaderFn<string> } ) {
   )
 }
 
-export function Player({ title, description, load }: PlayerProps) {
+export function Player({ title, description, ...props }: PlayerProps) {
   const [playing, setPlaying] = useState<boolean>(false);
 
   return (
@@ -46,7 +46,7 @@ export function Player({ title, description, load }: PlayerProps) {
               >
                 Stop
               </button>
-              <Runner load={load} />
+              <Runner {...props} />
             </>
           ) : (
             <>
