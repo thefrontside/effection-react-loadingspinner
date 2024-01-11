@@ -1,5 +1,5 @@
-import { useMemo, useEffect, useState } from "react";
-import { run, Callable } from "effection";
+import { useMemo, useEffect, useState, useCallback } from "react";
+import { run, type Callable } from "effection";
 import { createLoader } from "../operations/createLoader";
 import { UpdateFn, UpdateFnContext } from "../operations/UpdateFnContext";
 
@@ -34,17 +34,23 @@ export type LoaderState<T> =
       error: Error;
     };
 
-    
+export type LoaderFn<T> = (params: { attempt: number, signal: AbortSignal }) => Callable<T>;
+
 export function useLoader<T>(
-  fetcher: (attempt: number, signal: AbortSignal) => Callable<T>,
+  load: LoaderFn<T>,
   retryAttempts: number = 3,
-): LoaderState<T> {
+) {
   const [state, setState] = useState<LoaderState<T>>({ type: "initial" });
+  const [key, setKey] = useState<number>(0);
+
+  const restart = useCallback(() => {
+    setKey(key + 1);
+  }, [key, setKey]);
 
   const loader = useMemo(() => createLoader({
     retryAttempts,
-    fetcher,
-  }), [fetcher, retryAttempts]);
+    load,
+  }), [load, retryAttempts]);
 
   useEffect(() => {
     const task = run(function* () {
@@ -54,8 +60,9 @@ export function useLoader<T>(
 
     return () => {
       run(() => task.halt());
+      setState({ type: "initial" })
     };
-  }, [loader]);
+  }, [loader, key]);
 
-  return state;
+  return [state, { restart }] as const;
 }

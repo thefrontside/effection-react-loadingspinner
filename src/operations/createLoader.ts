@@ -1,15 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Operation, sleep, spawn, type Callable, call, useAbortSignal } from "effection";
+import { Operation, sleep, spawn, call, useAbortSignal } from "effection";
 import { createSpinner } from "./createSpinner";
 import { UpdateFnContext } from "./UpdateFnContext";
+import { LoaderFn } from "../hooks/useLoader";
 
 interface CreateLoaderOptions<T> {
-  fetcher: (attempt: number, signal: AbortSignal) => Callable<T>;
+  load: LoaderFn<T>;
   retryAttempts: number;
 }
 
 export function createLoader<T>({
-  fetcher,
+  load,
   retryAttempts,
 }: CreateLoaderOptions<T>): () => Operation<void> {
   return function* loader() {
@@ -25,7 +26,7 @@ export function createLoader<T>({
       const signal = yield* useAbortSignal();
 
       try {
-        const result = yield* call(() => fetcher(attempt, signal));
+        const result = yield* call(() => load({ attempt, signal }));
 
         update({
           type: "success",
