@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
-import { run, type Callable } from "effection";
+import { run, type Callable, lift } from "effection";
 import { CreateLoaderOptions, createLoader } from "../operations/createLoader";
-import { UpdateFn, UpdateFnContext } from "../operations/UpdateFnContext";
+import { UpdateContext } from "../operations/UpdateContext";
 
 export type LoaderState<T> =
   | {
@@ -85,7 +85,7 @@ export function useLoader<T>(
 
   useEffect(() => {
     const task = run(function* () {
-      yield* UpdateFnContext.set(setState as UpdateFn);
+      yield* UpdateContext.set(lift(setState));
       yield* loader();
     });
 

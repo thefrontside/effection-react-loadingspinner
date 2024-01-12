@@ -1,5 +1,5 @@
 import { Operation, sleep } from "effection";
-import { UpdateFnContext } from "./UpdateFnContext";
+import { update } from "./UpdateContext";
 
 export type CreateSpinnerOptions = {
   showSpinnerAfterInterval: number;
@@ -13,20 +13,18 @@ export function createSpinner({
   loadingSlowlyInterval,
 }: CreateSpinnerOptions) {
   return function* loadingSpinner(): Operation<void> {
-    const update = yield* UpdateFnContext;
-
     yield* sleep(showSpinnerAfterInterval);
 
     let count = 0;
     while (true) {
-      update({
+      yield* update({
         type: "loading",
         count,
       });
 
       yield* sleep(loadingInterval);
 
-      update({
+      yield* update({
         type: "loading-slowly",
       });
 
