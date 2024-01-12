@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
-import { run, type Callable, lift } from "effection";
+import { run, type Callable } from "effection";
 import { CreateLoaderOptions, createLoader } from "../operations/createLoader";
-import { UpdateContext } from "../operations/UpdateContext";
+import { setUpdate } from "../operations/UpdateContext";
 
 export type LoaderState<T> =
   | {
@@ -54,7 +54,7 @@ export function useLoader<T>(
     retryingMessageInterval = 1000,
   } = options;
 
-  const [state, setState] = useState<LoaderState<T>>({ type: "initial" });
+  const [state, setState] = useState<LoaderState<unknown>>({ type: "initial" });
   const [key, setKey] = useState<number>(0);
 
   const restart = useCallback(() => {
@@ -85,13 +85,14 @@ export function useLoader<T>(
 
   useEffect(() => {
     const task = run(function* () {
-      yield* UpdateContext.set(lift(setState));
+      const update = yield* setUpdate(setState);
+      yield* update({ type: "initial" })
       yield* loader();
     });
 
     return () => {
       run(() => task.halt());
-      setState({ type: "initial" });
+
     };
   }, [loader, key]);
 
