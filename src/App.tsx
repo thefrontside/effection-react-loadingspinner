@@ -1,5 +1,5 @@
 import "./App.css";
-import { sleep, Operation } from "effection";
+import { sleep, Operation, run } from "effection";
 import { Player } from "./components/Player";
 import { useState } from "react";
 
@@ -170,6 +170,21 @@ export const App = () => {
                   }
                 }
               }
+            }}
+            {...options}
+          />
+        </li>
+        <li key="7" className="p-5">
+          <Player
+            title="Can be stopped when encountering a specific problem"
+            description="Show a loading spinner after 1 minute then show a message that connect because of VPN connection"
+            load={async function ({ stop }) {
+              await run(function* () {
+                yield* sleep(4000);
+                yield* stop("Not connected to the VPN.");
+              });
+
+              return "Will never happen"
             }}
             {...options}
           />

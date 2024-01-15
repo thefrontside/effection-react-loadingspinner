@@ -1,5 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Operation, sleep, spawn, call, useAbortSignal } from "effection";
+import {
+  Operation,
+  sleep,
+  spawn,
+  call,
+  useAbortSignal,
+  useScope,
+} from "effection";
 import { CreateSpinnerOptions, createSpinner } from "./createSpinner";
 import { update } from "./UpdateContext";
 import { LoaderFn } from "../hooks/useLoader";
@@ -26,6 +33,8 @@ export function createLoader<T>({
       type: "started",
     });
 
+    const scope = yield* useScope();
+
     for (let attempt = 0; attempt <= retryAttempts; attempt++) {
       const spinner = yield* spawn(function* () {
         if (attempt === 0) {
@@ -40,7 +49,14 @@ export function createLoader<T>({
       const signal = yield* useAbortSignal();
 
       try {
-        const result = yield* call(() => load({ attempt, signal }));
+        const result = yield* call(() =>
+          load({
+            attempt,
+            signal,
+            stop: (reason: string) =>
+              scope.run(() => update({ type: "stopped", reason })),
+          })
+        );
 
         yield* update({
           type: "success",

@@ -39,6 +39,12 @@ export function LoadingSpinner({ loader }: { loader: LoaderState<unknown> }): JS
           Failed after 3 attempts. Please contact support.
         </p>
       )
+    case "stopped":
+      return (
+        <p className="text-sky-400">
+          {loader.reason}
+        </p>
+      )
   }
 
   return <></>
