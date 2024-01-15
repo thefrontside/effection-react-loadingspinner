@@ -23,6 +23,7 @@ export type LoaderState<T> =
     }
   | {
       type: "failed-attempt";
+      attempt: number;
       error: Error;
     }
   | {
