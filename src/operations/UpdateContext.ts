@@ -8,8 +8,6 @@ export const update = function* update<T>(value: LoaderState<T>): Operation<void
   yield* setState(value);
 }
 
-export function* setUpdate(setState: (value: LoaderState<unknown>) => void): Operation<typeof update> {
-  const lifted = lift(setState);
-  yield* UpdateContext.set(lifted);
-  return lifted;
+export function* setUpdateContext(setState: (value: LoaderState<unknown>) => void): Operation<void> {
+  yield* UpdateContext.set(lift(setState));
 }
