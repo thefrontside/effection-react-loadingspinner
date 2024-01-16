@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState, useCallback } from "react";
-import { run, type Callable } from "effection";
+import { createChannel, run, spawn, type Callable, each, race, Operation } from "effection";
 import { CreateLoaderOptions, createLoader } from "../operations/createLoader";
-import { setUpdateContext, update } from "../operations/UpdateContext";
+import { setUpdateContext } from "../operations/UpdateContext";
 
 export type LoaderState<T> =
   | {
@@ -33,11 +33,16 @@ export type LoaderState<T> =
   | {
       type: "failed";
       error: Error;
-    };
+    }
+  | {
+    type: "stopped";
+    reason: string;
+  };
 
 export type LoaderFn<T> = (params: {
   attempt: number;
   signal: AbortSignal;
+  stop: (reason: string) => Operation<void>;
 }) => Callable<T>;
 
 export type UseLoaderOptions<T> = Partial<Omit<CreateLoaderOptions<T>, "load">>;
@@ -86,9 +91,24 @@ export function useLoader<T>(
 
   useEffect(() => {
     const task = run(function* () {
-      yield* setUpdateContext(setState);
-      yield* update({ type: "initial" })
-      yield* loader();
+      const channel = createChannel<LoaderState<unknown>>();
+
+      yield* setUpdateContext(channel.send);
+
+      const updates = yield* spawn(function*() {
+        for (const value of yield* each(channel)) {
+          setState(value);
+          if (value.type === "stopped") {
+            throw new Error("Forced interrupt")
+          }
+          yield* each.next();
+        }
+      });
+
+      const driver = yield* spawn(loader);
+
+      yield* race([updates, driver]);
+
     });
 
     return () => {
