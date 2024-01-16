@@ -1,11 +1,13 @@
-import { Operation, createContext } from "effection";
+import { Operation, createContext, lift } from "effection";
 import { LoaderState } from "../hooks/useLoader";
 
-type Update = (state: LoaderState<any>) => Operation<void>;
+export const UpdateContext = createContext<typeof update>("update");
 
-export const UpdateContext = createContext<Update>("update");
+export const update = function* update<T>(value: LoaderState<T>): Operation<void> {
+  const setState = yield* UpdateContext;
+  yield* setState(value);
+}
 
-export function* update<T>(state: LoaderState<T>): Operation<void> {
-  let setState = yield* UpdateContext;
-  yield* setState(state);
+export function* setUpdateContext(setState: (value: LoaderState<unknown>) => void): Operation<void> {
+  yield* UpdateContext.set(lift(setState));
 }

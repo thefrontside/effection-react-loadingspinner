@@ -6,6 +6,7 @@ import { LoaderFn } from "../hooks/useLoader";
 
 export type CreateLoaderOptions<T> = {
   load: LoaderFn<T>;
+  showSpinnerAfterInterval: number;
   retryAttempts: number;
   failedAttemptErrorInterval: number;
   retryingMessageInterval: number;
@@ -25,14 +26,16 @@ export function createLoader<T>({
       type: "started",
     });
 
-    for (let attempt = 0; attempt < retryAttempts; attempt++) {
-      const spinner = yield* spawn(
-        createSpinner({
-          showSpinnerAfterInterval,
+    for (let attempt = 0; attempt <= retryAttempts; attempt++) {
+      const spinner = yield* spawn(function* () {
+        if (attempt === 0) {
+          yield* sleep(showSpinnerAfterInterval);
+        }
+        yield* createSpinner({
           loadingInterval,
           loadingSlowlyInterval,
-        })
-      );
+        })();
+      });
 
       const signal = yield* useAbortSignal();
 
@@ -50,7 +53,7 @@ export function createLoader<T>({
 
         const error = e instanceof Error ? e : new Error(`${e}`);
 
-        if (attempt + 1 === retryAttempts) {
+        if (attempt === retryAttempts) {
           yield* update({
             type: "failed",
             error,
@@ -58,6 +61,7 @@ export function createLoader<T>({
         } else {
           yield* update({
             type: "failed-attempt",
+            attempt,
             error,
           });
           yield* sleep(failedAttemptErrorInterval);
