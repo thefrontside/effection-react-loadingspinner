@@ -1,5 +1,5 @@
 import { SpinnerCircular } from "spinners-react";
-import { LoaderState } from "../hooks/useLoader";
+import { LoaderState } from "../types";
 
 export function LoadingSpinner({ loader }: { loader: LoaderState<unknown> }): JSX.Element {
   switch (loader.type) {
