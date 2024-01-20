@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { Operation, sleep } from "effection";
-import { update } from "./UpdateContext";
+import { useLoaderState } from "./LoaderStateContext";
 
 export type CreateSpinnerOptions = {
   loadingInterval: number;
@@ -11,16 +12,18 @@ export function createSpinner({
   loadingSlowlyInterval,
 }: CreateSpinnerOptions) {
   return function* loadingSpinner(): Operation<void> {
+    const state = yield* useLoaderState();
+
     let count = 0;
     while (true) {
-      yield* update({
+      yield* state.send({
         type: "loading",
         count,
       });
 
       yield* sleep(loadingInterval);
 
-      yield* update({
+      yield* state.send({
         type: "loading-slowly",
       });
 

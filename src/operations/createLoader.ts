@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { Operation, sleep, spawn, call, useAbortSignal } from "effection";
 import { CreateSpinnerOptions, createSpinner } from "./createSpinner";
-import { update } from "./UpdateContext";
 import { LoaderFn } from "../hooks/useLoader";
+import { useLoaderState } from "./LoaderStateContext";
 
 export type CreateLoaderOptions<T> = {
   load: LoaderFn<T>;
@@ -22,7 +22,9 @@ export function createLoader<T>({
   retryingMessageInterval,
 }: CreateLoaderOptions<T>): () => Operation<void> {
   return function* loader() {
-    yield* update({
+    const state = yield* useLoaderState();
+
+    yield* state.send({
       type: "started",
     });
 
@@ -42,7 +44,7 @@ export function createLoader<T>({
       try {
         const result = yield* call(() => load({ attempt, signal }));
 
-        yield* update({
+        yield* state.send({
           type: "success",
           value: result,
         });
@@ -54,18 +56,18 @@ export function createLoader<T>({
         const error = e instanceof Error ? e : new Error(`${e}`);
 
         if (attempt === retryAttempts) {
-          yield* update({
+          yield* state.send({
             type: "failed",
             error,
           });
         } else {
-          yield* update({
+          yield* state.send({
             type: "failed-attempt",
             attempt,
             error,
           });
           yield* sleep(failedAttemptErrorInterval);
-          yield* update({
+          yield* state.send({
             type: "retrying",
             error,
           });

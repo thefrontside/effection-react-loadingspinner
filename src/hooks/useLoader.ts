@@ -1,39 +1,11 @@
-import { useMemo, useEffect, useState, useCallback } from "react";
-import { run, type Callable } from "effection";
+import { run, spawn, type Callable } from "effection";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  initLoaderStateContext,
+  useLoaderState,
+} from "../operations/LoaderStateContext";
 import { CreateLoaderOptions, createLoader } from "../operations/createLoader";
-import { setUpdateContext, update } from "../operations/UpdateContext";
-
-export type LoaderState<T> =
-  | {
-      type: "initial";
-    }
-  | {
-      type: "started";
-    }
-  | {
-      type: "loading";
-      count: number;
-    }
-  | {
-      type: "loading-slowly";
-    }
-  | {
-      type: "success";
-      value: T;
-    }
-  | {
-      type: "failed-attempt";
-      attempt: number;
-      error: Error;
-    }
-  | {
-      type: "retrying";
-      error: Error;
-    }
-  | {
-      type: "failed";
-      error: Error;
-    };
+import { LoaderState } from "../types";
 
 export type LoaderFn<T> = (params: {
   attempt: number;
@@ -86,9 +58,21 @@ export function useLoader<T>(
 
   useEffect(() => {
     const task = run(function* () {
-      yield* setUpdateContext(setState);
-      yield* update({ type: "initial" })
-      yield* loader();
+      yield* initLoaderStateContext();
+
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const state = yield* useLoaderState();
+
+      const subscription = yield* state;
+
+      yield* spawn(loader);
+
+      let next = yield* subscription.next();
+
+      while (!next.done) {
+        setState(next.value);
+        next = yield* subscription.next();
+      }
     });
 
     return () => {
