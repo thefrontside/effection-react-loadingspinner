@@ -1,5 +1,8 @@
 
 export type LoaderState<T> = {
+  type: "initial";
+} |
+{
   type: "started";
 } |
 {
