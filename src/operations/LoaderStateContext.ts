@@ -4,9 +4,9 @@ import { LoaderState } from "../types";
 export const LoaderStateContext =
   createContext<Channel<LoaderState<unknown>, void>>("loader-state");
 
-export function* initLoaderStateContext() {
-  const state = yield* resource<Channel<LoaderState<unknown>, void>>(function* (provide) {
-    const channel = createChannel<LoaderState<unknown>>();
+export function* initLoaderStateContext<T>() {
+  const state = yield* resource<Channel<LoaderState<T>, void>>(function* (provide) {
+    const channel = createChannel<LoaderState<T>>();
 
     try {
       yield* provide(channel);

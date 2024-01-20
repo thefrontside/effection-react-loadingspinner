@@ -27,7 +27,7 @@ export function useLoader<T>(
     retryingMessageInterval = 1000,
   } = options;
 
-  const [state, setState] = useState<LoaderState<unknown>>({ type: "initial" });
+  const [state, setState] = useState<LoaderState<T>>({ type: "initial" });
   const [key, setKey] = useState<number>(0);
 
   const restart = useCallback(() => {
@@ -58,7 +58,7 @@ export function useLoader<T>(
 
   useEffect(() => {
     const task = run(function* () {
-      yield* initLoaderStateContext();
+      yield* initLoaderStateContext<T>();
 
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const state = yield* useLoaderState();
